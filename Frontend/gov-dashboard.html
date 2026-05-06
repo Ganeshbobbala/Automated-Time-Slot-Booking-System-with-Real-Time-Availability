@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Government Dashboard - Supply Management</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    if (localStorage.getItem('govLoggedIn') !== 'true') {
+      window.location.href = 'gov-login.html';
+    }
+  </script>
+  <style>
+    .dashboard-container {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      min-height: 100vh;
+      background: var(--bg-color);
+    }
+    .sidebar {
+      background: var(--card-bg);
+      padding: 2rem;
+      border-right: 1px solid var(--border-color);
+      box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    }
+    .sidebar h2 { margin-bottom: 2rem; color: var(--accent); font-size: 1.2rem; }
+    .sidebar a {
+      display: block;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      text-decoration: none;
+      color: var(--text-color);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 6px rgba(52, 152, 219, 0.2);
+    }
+    .main-content {
+      padding: 2rem;
+      overflow-y: auto;
+    }
+    .grid-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .supply-card {
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 2rem;
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
+    th { background: #f8fafc; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; }
+    tr:hover { background: #f1f5f9; }
+    .badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; background: #dcfce7; color: #16a34a; }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <h2>🏛️ Gov Dashboard</h2>
+      <a href="#" class="active">Supply Management</a>
+      <a href="#" onclick="localStorage.removeItem('govLoggedIn'); window.location.href='index.html';" style="margin-top: 2rem; background: #ef4444; color: white;">Logout 🚪</a>
+    </aside>
+    
+    <main class="main-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1 style="color: var(--primary);">Ration Supply Distribution</h1>
+      </div>
+
+      <!-- Selection Hierarchy -->
+      <div class="supply-card">
+        <h3 style="margin-bottom: 1.5rem; color: #1e293b;">📍 Select Destination</h3>
+        <div class="grid-form">
+          <div class="form-group">
+            <label>State</label>
+            <select id="gov-state" onchange="window.updateGovHierarchy('state')">
+              <option value="">Select State</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>District</label>
+            <select id="gov-district" onchange="window.updateGovHierarchy('district')" disabled>
+              <option value="">Select District</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Mandal</label>
+            <select id="gov-mandal" onchange="window.updateGovHierarchy('mandal')" disabled>
+              <option value="">Select Mandal</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Village Shop</label>
+            <select id="gov-shop" disabled>
+              <option value="">Select Shop</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Send Stock Form -->
+      <div class="supply-card">
+        <h3 style="margin-bottom: 1.5rem; color: #1e293b;">📦 Allocate Stock to Dealer</h3>
+        <div class="grid-form">
+          <div class="form-group"><label>Rice (kg)</label><input type="number" id="supply-rice" min="0" value="0"></div>
+          <div class="form-group"><label>Wheat (kg)</label><input type="number" id="supply-wheat" min="0" value="0"></div>
+          <div class="form-group"><label>Sugar (kg)</label><input type="number" id="supply-sugar" min="0" value="0"></div>
+          <div class="form-group"><label>Oil (Liters)</label><input type="number" id="supply-oil" min="0" value="0"></div>
+          <div class="form-group"><label>Dal (kg)</label><input type="number" id="supply-dal" min="0" value="0"></div>
+          <div class="form-group"><label>Salt (kg)</label><input type="number" id="supply-salt" min="0" value="0"></div>
+          <div class="form-group"><label>Soap (Units)</label><input type="number" id="supply-soap" min="0" value="0"></div>
+        </div>
+        <button class="btn" style="width: 100%; height: 3rem;" onclick="window.sendStockToDealer()">🚀 Dispatch Stock to Shop</button>
+      </div>
+
+      <!-- History Table -->
+      <div class="supply-card">
+        <h3 style="margin-bottom: 1.5rem; color: #1e293b;">📜 Supply History (Sent to Dealers)</h3>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>Destination Shop</th>
+                <th>Rice (kg)</th>
+                <th>Wheat (kg)</th>
+                <th>Sugar (kg)</th>
+                <th>Oil (L)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="supply-history-body">
+              <!-- History populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="gov.js"></script>
+</body>
+</html>

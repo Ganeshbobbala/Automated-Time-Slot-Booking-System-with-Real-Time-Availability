@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Government Secure Login</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+    }
+    .login-card {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 3rem 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .logo-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+    }
+    h2 {
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+      font-size: 1.8rem;
+    }
+    p.subtitle {
+      color: #64748b;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+    }
+    .form-group {
+      text-align: left;
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #334155;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.3s;
+      box-sizing: border-box;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+    .btn-login {
+      background: #10b981;
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 1rem;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 1rem;
+    }
+    .btn-login:hover {
+      background: #059669;
+      transform: translateY(-2px);
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 1.5rem;
+      color: #64748b;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.3s;
+    }
+    .back-link:hover {
+      color: #0f172a;
+    }
+    #error-msg {
+      color: #ef4444;
+      background: #fee2e2;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+      display: none;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="logo-icon">🏛️</div>
+    <h2>Government Portal</h2>
+    <p class="subtitle">Secure authentication required</p>
+
+    <div id="error-msg">Invalid email or password.</div>
+
+    <form id="gov-login-form">
+      <div class="form-group">
+        <label for="gov-email">Official Email</label>
+        <input type="email" id="gov-email" placeholder="admin@gov.in" required>
+      </div>
+      <div class="form-group">
+        <label for="gov-password">Secure Password</label>
+        <input type="password" id="gov-password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn-login">Secure Login 🔒</button>
+    </form>
+    
+    <div style="margin-top: 20px; font-size: 0.9rem; color: #64748b;">
+      New Official? <a href="gov-signup.html" style="color: #10b981; text-decoration: none; font-weight: bold;">Register here</a>
+    </div>
+
+    <a href="index.html" class="back-link">← Return to Main Page</a>
+  </div>
+
+  <script>
+    document.getElementById('gov-login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.getElementById('gov-email').value;
+      const pass = document.getElementById('gov-password').value;
+      const errorMsg = document.getElementById('error-msg');
+      
+      // Default Secure Government Credentials
+      const defaultEmail = 'admin@gov.in';
+      const defaultPass = 'gov123';
+
+      let govUsers = JSON.parse(localStorage.getItem('govUsers') || '[]');
+      const registeredUser = govUsers.find(u => u.email === email && u.password === pass);
+
+      if ((email === defaultEmail && pass === defaultPass) || registeredUser) {
+        // Authenticated successfully
+        localStorage.setItem('govLoggedIn', 'true');
+        window.location.href = 'gov-dashboard.html';
+      } else {
+        // Auth failed
+        errorMsg.style.display = 'block';
+        // Add shake animation
+        const card = document.querySelector('.login-card');
+        card.style.animation = 'shake 0.4s';
+        setTimeout(() => card.style.animation = '', 400);
+      }
+    });
+  </script>
+  <style>
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+      100% { transform: translateX(0); }
+    }
+  </style>
+</body>
+</html>
