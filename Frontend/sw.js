@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ration-v2';
+const CACHE_NAME = 'ration-v3';
 const ASSETS = [
     './',
     './index.html',

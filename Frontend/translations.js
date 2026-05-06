@@ -1,6 +1,6 @@
 const translations = {
   en: {
-    appName: "Digital Ration Distribution",
+    appName: "Automated Time Slot Booking System with Real-Time Availability",
     login: "Login",
     logout: "Logout",
     rationCard: "Ration Card Number",

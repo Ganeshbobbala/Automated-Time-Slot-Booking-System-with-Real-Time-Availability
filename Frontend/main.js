@@ -1066,15 +1066,6 @@ document.addEventListener('DOMContentLoaded', () => {
       bookBtn.disabled = false;
     }
 
-    const collectorSelect = document.getElementById('collector-name');
-    if (collectorSelect && user && user.rationCard) {
-      const uData = JSON.parse(localStorage.getItem('userData_' + user.rationCard));
-      if (uData && uData.family && Array.isArray(uData.family)) {
-        collectorSelect.innerHTML = uData.family.map(m => `<option value="${m.name}">${m.name} (${m.relation})</option>`).join('');
-      } else {
-        collectorSelect.innerHTML = `<option value="${user.name}">${user.name}</option>`;
-      }
-    }
 
     // Set date range (from today for next 7 days)
     const today = new Date();
@@ -1283,7 +1274,7 @@ document.addEventListener('DOMContentLoaded', () => {
       confirmOverlay.style.backdropFilter = 'blur(4px)';
 
       const displayItems = selectedItems.length > 0 ? selectedItems.join(', ').toUpperCase() : 'None';
-      const collectorName = collectorSelect ? collectorSelect.value : user.name;
+      const collectorName = user.name;
 
       confirmOverlay.innerHTML = `
         <div style="background:white; padding:2rem; border-radius:16px; text-align:center; max-width:90%; width: 400px; color:#1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
@@ -1312,7 +1303,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const newBooking = {
           id: Date.now(),
           customerName: user.name,
-          collectorName: collectorSelect ? collectorSelect.value : user.name,
+          collectorName: user.name,
           rationCard: rationCard,
           role: user.role,
           phone: user.phone || '+918247087380', // Updated to your number
@@ -1787,6 +1778,80 @@ document.addEventListener('DOMContentLoaded', () => {
         location.reload();
       }, 500);
     }, 2000);
+  };
+
+  window.verifyDetails = function (id) {
+    let bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    const booking = bookings.find(b => b.id === id);
+    if (!booking) return;
+
+    const uData = JSON.parse(localStorage.getItem('userData_' + (booking.rationCard || '1234567890'))) || {};
+    let familyOptions = '';
+    if (uData && uData.family && Array.isArray(uData.family)) {
+      familyOptions = uData.family.map(m => `<option value="\${m.name}">\${m.name} (\${m.relation})</option>`).join('');
+    } else {
+      familyOptions = `<option value="\${booking.customerName}">\${booking.customerName}</option>`;
+    }
+
+    const html = `
+      <h2 style="margin-bottom:10px; color: var(--accent);">👤 Verify Collector</h2>
+      
+      <div class="form-group" style="margin-bottom: 20px; text-align: left;">
+        <label for="admin-collector-name" style="font-weight: 600; font-size: 0.95rem; color: #1e293b; display: block; margin-bottom: 8px;">Who came to collect the ration?</label>
+        <select id="admin-collector-name" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; background: white; font-size: 1rem;">
+          \${familyOptions}
+        </select>
+      </div>
+      
+      <div id="scanner-container" style="display: none; text-align: center; margin-bottom: 20px;">
+        <div class="scanner-animation" style="width: 100px; height: 100px; border: 3px solid #3498db; border-radius: 10px; margin: 0 auto; position: relative; overflow: hidden; background: #e2e8f0;">
+            <div style="position: absolute; width: 100%; height: 3px; background: #2ecc71; box-shadow: 0 0 10px #2ecc71; animation: scan 1.5s infinite linear;"></div>
+            <div style="font-size: 3.5rem; line-height: 100px;">🧑</div>
+        </div>
+        <p style="margin-top: 10px; color: #3498db; font-weight: bold;" id="scanner-text">Scanning Face / Biometrics...</p>
+      </div>
+
+      <button id="start-verify-btn" class="btn" style="width: 100%; height: 3rem; background: #3498db; margin-bottom: 10px;" onclick="
+        const collectorName = document.getElementById('admin-collector-name').value;
+        document.getElementById('scanner-container').style.display = 'block';
+        document.getElementById('start-verify-btn').style.display = 'none';
+        document.getElementById('admin-collector-name').disabled = true;
+        setTimeout(() => {
+            document.getElementById('scanner-text').innerHTML = '✅ Verified Successfully!';
+            document.getElementById('scanner-text').style.color = '#2ecc71';
+            
+            let currentBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            const bIndex = currentBookings.findIndex(b => b.id === \${id});
+            if (bIndex !== -1) {
+                currentBookings[bIndex].collectorName = collectorName;
+                localStorage.setItem('bookings', JSON.stringify(currentBookings));
+                if (typeof window.renderAdminDashboard === 'function') {
+                    window.renderAdminDashboard();
+                }
+            }
+            
+            setTimeout(() => {
+                window.closeModal();
+            }, 1500);
+        }, 3000);
+      ">📷 Start Face / Biometric Scan</button>
+      
+      <button class="btn btn-secondary" style="width: 100%; background: #94a3b8; border: none; color: white;" onclick="window.closeModal()">🔙 Cancel</button>
+      
+      <style>
+        @keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+      </style>
+    `;
+
+    if (typeof window.customShowModal === 'function') {
+      window.customShowModal(html);
+    } else {
+      showModal(html);
+    }
   };
 
   window.adminReschedule = function (id) {
@@ -2281,7 +2346,7 @@ window.downloadReceipt = function (bookingId) {
   if (!booking) return;
 
   const receiptContent = `
-      DIGITAL RATION DISTRIBUTION
+      AUTOMATED TIME SLOT BOOKING SYSTEM WITH REAL-TIME AVAILABILITY
       ===========================
       Booking ID: ${booking.id}
       Customer: ${booking.customerName}

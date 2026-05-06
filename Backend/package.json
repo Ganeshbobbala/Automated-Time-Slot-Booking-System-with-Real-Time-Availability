@@ -1,7 +1,7 @@
 {
     "name": "digital-ration-backend",
     "version": "1.0.0",
-    "description": "Backend for Digital Ration Distribution",
+    "description": "Backend for Automated Time Slot Booking System with Real-Time Availability",
     "main": "server.js",
     "scripts": {
         "start": "node server.js",
