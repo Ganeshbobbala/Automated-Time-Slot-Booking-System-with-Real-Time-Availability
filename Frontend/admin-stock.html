@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Management</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <header>
+    <div class="logo" data-i18n="appName">Digital Ration Distribution</div>
+    <div>
+      <span id="user-name"></span>
+      <a href="admin.html" class="btn" style="margin-right:10px;">Dashboard</a>
+      <button id="logout-btn" class="btn-logout" data-i18n="logout">Logout</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="card glass-card" style="max-width: 600px; margin: 0 auto;">
+      <h2 style="margin-bottom: 2rem;">Stock Management</h2>
+      <table id="stock-table">
+        <thead>
+          <tr>
+            <th data-i18n="name" style="width: 50%;">Item</th>
+            <th data-i18n="currentStock" style="text-align: right; width: 50%;">Current Stock (kg)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div id="low-stock-alert" style="color:var(--danger); margin-top:1.5rem; font-weight:700; text-align:center;">
+      </div>
+    </div>
+  </div>
+
+  <script src="translations.js"></script>
+  <script src="main.js"></script>
+</body>
+
+</html>

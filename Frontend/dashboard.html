@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+
+<body>
+  <header>
+    <div class="logo" data-i18n="appName">Digital Ration Distribution</div>
+    <div>
+      <span id="user-name"></span>
+      <button id="logout-btn" class="btn-logout" data-i18n="logout">Logout</button>
+    </div>
+  </header>
+
+  <!-- Notification Hub -->
+  <button class="notification-toggle-btn" onclick="toggleNotifications()">
+    🔔 <span class="notification-badge" id="notif-count" style="display:none;">0</span>
+  </button>
+
+  <aside class="notification-hub" id="notification-hub">
+    <div class="notification-header">
+      <h2>Notifications</h2>
+      <button class="notification-close" onclick="toggleNotifications()">×</button>
+    </div>
+    <div class="notification-list" id="notification-list">
+      <div class="notification-item success">
+        <h4>Welcome</h4>
+        <p>You can now track your ration distribution in real-time.</p>
+        <span class="time">Just now</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="container">
+
+    <div class="card glass-card" style="text-align:center; padding: 2rem;">
+      <h2 style="font-size: 2rem; font-weight: 800; color: #1e293b; margin: 0;">
+        <span data-i18n="welcome">Namaste</span>, <span id="display-name"></span> 🙏
+      </h2>
+    </div>
+
+    <div class="card" style="margin-bottom: 2rem;">
+      <h3 data-i18n="familyDetails">Family Details</h3>
+      <ul class="family-list" id="family-list"
+        style="display: flex; flex-direction: column; gap: 0.5rem; list-style: none; padding: 0;"></ul>
+    </div>
+
+    <div class="card" style="margin-bottom: 2rem;">
+      <h3 data-i18n="remainingQuota" style="margin-bottom: 1.5rem;">Remaining Ration</h3>
+      <div class="stats-cards" id="quota-grid"
+        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem;">
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="bookingHistory">Booking History</h3>
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="bookingId">Booking ID</th>
+            <th data-i18n="date">Date</th>
+            <th data-i18n="timeSlot">Time Slot</th>
+            <th data-i18n="items">Items</th>
+            <th data-i18n="status">Status</th>
+            <th data-i18n="qrCode">QR Code</th>
+          </tr>
+        </thead>
+        <tbody id="customer-bookings-body"></tbody>
+      </table>
+    </div>
+
+    <div class="btn-group" style="margin-top: 2rem;">
+      <a href="booking.html" class="btn" data-i18n="bookSlot">Book Slot</a>
+      <a href="wallet.html" class="btn" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);">🪪 Digital
+        Wallet</a>
+      <a href="rebook.html" class="btn btn-secondary" data-i18n="rebookMissed" style="background: var(--accent);">Missed
+        Slot? Re-book</a>
+      <button onclick="showCustomerReportModal()" class="btn" style="background: #3b82f6;">📊 Monthly Report</button>
+    </div>
+    <!-- Map section removed -->
+
+    <div class="card glass-card" style="margin-top: 40px;">
+      <h3 data-i18n="feedback">Share Your Feedback</h3>
+      <div id="feedback-form">
+        <div class="form-group">
+          <label data-i18n="experience">How was your experience?</label>
+          <div class="rating-stars" style="font-size: 1.5rem; cursor: pointer; color: #f1c40f;">
+            <span onclick="setRating(1)">★</span><span onclick="setRating(2)">★</span><span
+              onclick="setRating(3)">★</span><span onclick="setRating(4)">★</span><span onclick="setRating(5)">★</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <textarea id="feedback-comment" data-i18n="tellMore" placeholder="Tell us more..."
+            style="width:100%; height:80px;"></textarea>
+        </div>
+        <button class="btn" onclick="submitFeedback()" data-i18n="submit">Submit Feedback</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="translations.js"></script>
+  <script src="main.js"></script>
+
+  <!-- AI Chatbot Widget -->
+  <div id="ai-chatbot" class="chatbot-collapsed">
+    <div class="chatbot-header">
+      <span>🤖 Ration AI Assistant</span>
+      <button onclick="toggleChatbot()">✖</button>
+    </div>
+    <div id="chatbot-messages" class="chatbot-body">
+      <div class="msg bot">Hello! How can I help you with your ration booking today?</div>
+    </div>
+    <div class="chatbot-input">
+      <input type="text" id="chat-input" placeholder="Ask a question...">
+      <button onclick="startVoiceRecognition()" style="background:var(--accent); padding: 8px 10px;">🎤</button>
+      <button onclick="sendChatMessage()">Send</button>
+    </div>
+  </div>
+  <div id="chatbot-launcher" onclick="toggleChatbot()">
+    🤖
+  </div>
+
+
+</body>
+
+</html>

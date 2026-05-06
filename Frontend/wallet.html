@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Ration Wallet</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .wallet-card {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        .wallet-card::after {
+            content: 'DIGITAL PASS';
+            position: absolute;
+            top: 10px;
+            right: -30px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 40px;
+            transform: rotate(45deg);
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .qr-container {
+            background: white;
+            padding: 1rem;
+            border-radius: 1rem;
+            margin: 1.5rem auto;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .details {
+            text-align: left;
+            margin-top: 1.5rem;
+        }
+
+        .details-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">Digital Ration Wallet</div>
+        <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">Back</button>
+    </header>
+
+    <div class="container" style="max-width: 500px;">
+        <div class="wallet-card" id="wallet-content">
+            <h2 id="wallet-name" style="margin:0;">---</h2>
+            <p id="wallet-category" style="opacity:0.8; font-size: 0.9rem;">---</p>
+
+            <div class="qr-container">
+                <img id="wallet-qr" src="" alt="QR" style="width:100%;">
+            </div>
+
+            <div class="details">
+                <div class="details-row">
+                    <span>Card Number</span>
+                    <strong id="wallet-card-num">---</strong>
+                </div>
+                <div class="details-row">
+                    <span>Family Members</span>
+                    <strong id="wallet-family">---</strong>
+                </div>
+                <div class="details-row">
+                    <span>Status</span>
+                    <strong id="wallet-status">VERIFIED</strong>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem; text-align: center;">
+            <button class="btn" onclick="window.print()" style="width: 100%; margin-bottom: 1rem;">🖨️ Download/Print
+                Pass</button>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">
+                💡 Add this page to your home screen to use it as an <strong>Offline Pass</strong> at the shop.
+            </p>
+        </div>
+    </div>
+
+    <script src="translations.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                window.location.href = 'customer-login.html';
+                return;
+            }
+
+            const userData = JSON.parse(localStorage.getItem('userData_' + user.rationCard)) || {};
+
+            document.getElementById('wallet-name').textContent = userData.name || user.name;
+            document.getElementById('wallet-category').textContent = (userData.category || 'BPL') + ' Holder';
+            document.getElementById('wallet-card-num').textContent = user.rationCard;
+            document.getElementById('wallet-family').textContent = (userData.family ? userData.family.length : '3') + ' Members';
+
+            const payload = encodeURIComponent(JSON.stringify({
+                rationCard: user.rationCard,
+                name: userData.name,
+                category: userData.category
+            }));
+            document.getElementById('wallet-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${payload}`;
+        });
+    </script>
+</body>
+
+</html>

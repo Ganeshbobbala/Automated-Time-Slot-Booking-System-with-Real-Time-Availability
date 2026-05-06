@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Slot</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+
+<body>
+  <header>
+    <div class="logo" data-i18n="appName">Digital Ration Distribution</div>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <span id="user-name" style="font-weight: 600; opacity: 0.9;"></span>
+      <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'"
+        data-i18n="dashboard">Dashboard</button>
+      <button id="logout-btn" class="btn-logout" data-i18n="logout">Logout</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="card glass-card">
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+        <button onclick="window.location.href='dashboard.html'" class="back-btn">←</button>
+        <h2 data-i18n="bookSlot" style="margin-bottom:0;">Book a Slot</h2>
+      </div>
+
+      <div id="pause-banner"
+        style="background:var(--danger); color:white; padding:1rem; border-radius:0.75rem; margin-bottom:1.5rem; display:none; animation: pulse 2s infinite;">
+        <strong data-i18n="noticePaused">Notice: Bookings are temporarily paused due to intense demand or technical
+          maintenance.</strong>
+      </div>
+
+      <div class="form-group">
+        <label for="booking-date" data-i18n="selectDate">Select Available Date</label>
+        <input type="date" id="booking-date">
+      </div>
+
+      <div style="margin: 2rem 0;">
+        <h3 style="font-size: 1rem; margin-bottom: 1rem;" data-i18n="selectTime">Select Time Slot</h3>
+        <div id="slots-container" class="slot-list"></div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 2rem;">
+        <label for="collector-name" style="font-weight: 600; font-size: 0.95rem;" data-i18n="whoIsCollecting">Who is
+          Collecting?
+          (Delegation)</label>
+        <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.5rem;" data-i18n="selectFamilyMember">Select which
+          family member will visit the
+          shop physically.</p>
+        <select id="collector-name"
+          style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem;"></select>
+      </div>
+
+
+
+      <div class="form-group" style="margin-bottom: 2rem;">
+        <label style="font-weight: 600; font-size: 0.95rem;">Select Required Items (Opt-in)</label>
+        <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.5rem;">Choose the items you want to collect during
+          this slot.</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px;">
+          <label style="display: flex; align-items: center; gap: 5px; font-size: 0.9rem;"><input type="checkbox"
+              name="booking_items" value="rice" style="width:auto"> Rice 🍚</label>
+          <label style="display: flex; align-items: center; gap: 5px; font-size: 0.9rem;"><input type="checkbox"
+              name="booking_items" value="wheat" style="width:auto"> Wheat 🌾</label>
+          <label style="display: flex; align-items: center; gap: 5px; font-size: 0.9rem;"><input type="checkbox"
+              name="booking_items" value="sugar" style="width:auto"> Sugar 🍬</label>
+          <label style="display: flex; align-items: center; gap: 5px; font-size: 0.9rem;"><input type="checkbox"
+              name="booking_items" value="oil" style="width:auto"> Oil 🧴</label>
+          <label style="display: flex; align-items: center; gap: 5px; font-size: 0.9rem;"><input type="checkbox"
+              name="booking_items" value="dal" style="width:auto"> Dal 🥣</label>
+          <label style="display: flex; align-items: center; gap: 5px; font-size: 0.9rem;"><input type="checkbox"
+              name="booking_items" value="salt" style="width:auto"> Salt 🧂</label>
+          <label style="display: flex; align-items: center; gap: 5px; font-size: 0.9rem;"><input type="checkbox"
+              name="booking_items" value="soap" style="width:auto"> Soap 🧼</label>
+        </div>
+      </div>
+
+      <div class="form-group"
+        style="display: flex; align-items: center; gap: 0.5rem; background: #f1f5f9; padding: 1rem; border-radius: 0.75rem;">
+        <input type="checkbox" id="emergency-booking" style="width: auto;">
+        <label for="emergency-booking" style="margin-bottom: 0;" data-i18n="emergency">Mark as Emergency Booking
+          (Immediate Priority)</label>
+      </div>
+
+      <button id="book-btn" class="btn" style="width: 100%; height: 3.5rem; font-size: 1.1rem;"
+        data-i18n="confirm">Confirm My Slot</button>
+    </div>
+  </div>
+
+  <script src="translations.js"></script>
+  <script src="main.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,190 @@
+{
+  "table_name": {
+    "required": [
+      "id",
+      "inserted_at",
+      "updated_at"
+    ],
+    "properties": {
+      "id": {
+        "description": "Note:\nThis is a Primary Key.<pk/>",
+        "format": "bigint",
+        "type": "integer"
+      },
+      "inserted_at": {
+        "default": "timezone('utc'::text, now())",
+        "format": "timestamp with time zone",
+        "type": "string"
+      },
+      "updated_at": {
+        "default": "timezone('utc'::text, now())",
+        "format": "timestamp with time zone",
+        "type": "string"
+      },
+      "data": {
+        "format": "jsonb"
+      },
+      "name": {
+        "format": "text",
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
+  "Stock": {
+    "required": [
+      "id"
+    ],
+    "properties": {
+      "id": {
+        "description": "Note:\nThis is a Primary Key.<pk/>",
+        "format": "integer",
+        "type": "integer"
+      },
+      "rice": {
+        "default": 500,
+        "format": "numeric",
+        "type": "number"
+      },
+      "wheat": {
+        "default": 300,
+        "format": "numeric",
+        "type": "number"
+      },
+      "sugar": {
+        "default": 100,
+        "format": "numeric",
+        "type": "number"
+      },
+      "oil": {
+        "default": 100,
+        "format": "numeric",
+        "type": "number"
+      },
+      "dal": {
+        "default": 100,
+        "format": "numeric",
+        "type": "number"
+      },
+      "salt": {
+        "default": 100,
+        "format": "numeric",
+        "type": "number"
+      },
+      "soap": {
+        "default": 100,
+        "format": "numeric",
+        "type": "number"
+      }
+    },
+    "type": "object"
+  },
+  "User": {
+    "required": [
+      "rationCard"
+    ],
+    "properties": {
+      "rationCard": {
+        "description": "Note:\nThis is a Primary Key.<pk/>",
+        "format": "text",
+        "type": "string"
+      },
+      "name": {
+        "format": "text",
+        "type": "string"
+      },
+      "family_members": {
+        "format": "integer",
+        "type": "integer"
+      },
+      "district": {
+        "format": "text",
+        "type": "string"
+      },
+      "monthly_income": {
+        "format": "numeric",
+        "type": "number"
+      },
+      "category": {
+        "format": "text",
+        "type": "string"
+      },
+      "age": {
+        "format": "integer",
+        "type": "integer"
+      },
+      "gas_connection": {
+        "default": "Yes",
+        "format": "text",
+        "type": "string"
+      },
+      "status": {
+        "default": "Active",
+        "format": "text",
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
+  "Booking": {
+    "required": [
+      "id"
+    ],
+    "properties": {
+      "id": {
+        "description": "Note:\nThis is a Primary Key.<pk/>",
+        "format": "bigint",
+        "type": "integer"
+      },
+      "customerName": {
+        "format": "text",
+        "type": "string"
+      },
+      "phone": {
+        "format": "text",
+        "type": "string"
+      },
+      "rationCard": {
+        "format": "text",
+        "type": "string"
+      },
+      "date": {
+        "format": "text",
+        "type": "string"
+      },
+      "time": {
+        "format": "text",
+        "type": "string"
+      },
+      "status": {
+        "default": "booked",
+        "format": "text",
+        "type": "string"
+      },
+      "predictedCardType": {
+        "format": "text",
+        "type": "string"
+      },
+      "isPriority": {
+        "default": false,
+        "format": "boolean",
+        "type": "boolean"
+      },
+      "family_members": {
+        "default": 3,
+        "format": "integer",
+        "type": "integer"
+      },
+      "hash": {
+        "format": "text",
+        "type": "string"
+      },
+      "created_at": {
+        "default": "timezone('utc'::text, now())",
+        "format": "timestamp with time zone",
+        "type": "string"
+      }
+    },
+    "type": "object"
+  }
+}

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Token Display - Digital Ration</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body {
+            background: #0f172a;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .token-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            padding: 2rem;
+            flex: 1;
+        }
+
+        .token-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2rem;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .token-title {
+            font-size: 2rem;
+            text-transform: uppercase;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            letter-spacing: 2px;
+        }
+
+        .current-token {
+            font-size: 8rem;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 0 30px rgba(79, 70, 229, 0.5);
+        }
+
+        .next-tokens-list {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .next-token {
+            font-size: 2rem;
+            opacity: 0.5;
+        }
+
+        .info-footer {
+            background: var(--primary);
+            padding: 1rem;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .live-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #10b981;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.5);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div style="padding: 2rem; text-align: center;">
+        <h1 style="font-size: 3rem; margin-bottom: 0.5rem;" data-i18n="appName">Digital Ration Distribution</h1>
+        <p style="font-size: 1.5rem; opacity: 0.8;"><span class="live-indicator"></span> LIVE QUEUE DISPLAY</p>
+    </div>
+
+    <div class="token-grid">
+        <div class="token-section">
+            <div class="token-title">Current Serving</div>
+            <div id="serving-token" class="current-token">--</div>
+            <div style="margin-top: 1rem; font-size: 1.5rem;">Please proceed to counter</div>
+        </div>
+
+        <div class="token-section">
+            <div class="token-title">Next in Line</div>
+            <div id="next-token" class="current-token" style="color: var(--accent); opacity: 0.9;">--</div>
+            <div class="next-tokens-list" id="upcoming-tokens">
+                <span class="next-token">--</span>
+                <span class="next-token">--</span>
+                <span class="next-token">--</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-footer">
+        KINDLY MAINTAIN SOCIAL DISTANCING & KEEP YOUR QR CODE READY
+    </div>
+
+    <script src="translations.js"></script>
+    <script>
+        const socket = io('http://localhost:5000');
+
+        socket.on('init-data', (data) => {
+            if (data.bookings) {
+                localStorage.setItem('bookings', JSON.stringify(data.bookings));
+                updateTokens();
+            }
+        });
+
+        socket.on('new-booking', (booking) => {
+            let bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            if (!bookings.find(b => b.id === booking.id)) {
+                bookings.push(booking);
+                localStorage.setItem('bookings', JSON.stringify(bookings));
+                updateTokens();
+            }
+        });
+
+        socket.on('status-changed', (updatedBooking) => {
+            let bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            const index = bookings.findIndex(b => b.id === updatedBooking.id);
+            if (index !== -1) {
+                bookings[index] = updatedBooking;
+                localStorage.setItem('bookings', JSON.stringify(bookings));
+                updateTokens();
+            }
+        });
+
+        socket.on('token-update', (data) => {
+            updateTokens();
+        });
+
+        function updateTokens() {
+            // Fetch latest from local (which is synced via socket)
+            const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            const today = new Date().toISOString().split('T')[0];
+            const todayBooked = bookings.filter(b => b.date === today && b.status === 'booked');
+
+            if (todayBooked.length > 0) {
+                document.getElementById('serving-token').textContent = 'T-' + todayBooked[0].id.toString().slice(-3);
+                if (todayBooked.length > 1) {
+                    document.getElementById('next-token').textContent = 'T-' + todayBooked[1].id.toString().slice(-3);
+                    const upcoming = todayBooked.slice(2, 5);
+                    const upcomingHtml = upcoming.map(b => `<span class="next-token">T-${b.id.toString().slice(-3)}</span>`).join('');
+                    document.getElementById('upcoming-tokens').innerHTML = upcomingHtml || '<span class="next-token">No more tokens</span>';
+                }
+            } else {
+                document.getElementById('serving-token').textContent = '--';
+                document.getElementById('next-token').textContent = '--';
+                document.getElementById('upcoming-tokens').innerHTML = '<span class="next-token">No active tokens</span>';
+            }
+        }
+
+        // Periodic backup refresh
+        setInterval(updateTokens, 10000);
+    </script>
+</body>
+
+</html>

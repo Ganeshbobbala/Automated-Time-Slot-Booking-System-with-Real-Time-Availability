@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Token Display</title>
+  <style>
+    body { font-family: Arial; text-align: center; background: #2c3e50; color: white; margin:0; padding:20px; }
+    .token { font-size: 4rem; margin: 20px; }
+    .slot { font-size: 2rem; background: #34495e; padding: 20px; margin: 10px; border-radius: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Current Tokens</h1>
+  <div id="tokens"></div>
+  <script src="main.js"></script>
+  <script>
+    function updateTokens() {
+      const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+      const today = new Date().toISOString().split('T')[0];
+      const todayBookings = bookings.filter(b => b.date === today && b.status === 'booked');
+      const slots = [...new Set(todayBookings.map(b => b.time))].sort();
+      let html = '';
+      slots.forEach(slot => {
+        const count = todayBookings.filter(b => b.time === slot).length;
+        html += `<div class="slot">${slot} – ${count} booked</div>`;
+      });
+      document.getElementById('tokens').innerHTML = html || '<div>No bookings today</div>';
+    }
+    updateTokens();
+    setInterval(updateTokens, 10000);
+  </script>
+</body>
+</html>

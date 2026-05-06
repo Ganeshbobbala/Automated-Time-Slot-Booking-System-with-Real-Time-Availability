@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Re-book Missed Slot</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <header>
+        <div class="logo" data-i18n="appName">Digital Ration Distribution</div>
+        <div>
+            <span id="user-name"></span>
+            <a href="dashboard.html" class="btn" style="margin-right:10px;" data-i18n="dashboard">Dashboard</a>
+            <button id="logout-btn" class="btn-logout" data-i18n="logout">Logout</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card glass-card">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                <button onclick="window.location.href='dashboard.html'" class="back-btn">←</button>
+                <h2 data-i18n="rebookTitle" style="margin-bottom:0;">Re-book Missed Slot</h2>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">
+                Missed your appointment? You can re-book for the <strong>final day</strong> of this month's distribution
+                cycle.
+            </p>
+
+            <div id="rebook-notice"
+                style="background:var(--primary); color:white; padding:1rem; border-radius:0.75rem; margin-bottom:1.5rem;">
+                <span data-i18n="lastDayMessage">Your re-booked slot will be on:</span> <strong
+                    id="last-day-display"></strong>
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="selectTime">Select Time Slot for Final Day</label>
+                <div id="rebook-slots-container" class="slot-list"></div>
+            </div>
+
+            <button id="rebook-confirm-btn" class="btn" style="width: 100%; height: 3.5rem; font-size: 1.1rem;"
+                data-i18n="confirm">Confirm Re-booking</button>
+        </div>
+    </div>
+
+    <script src="translations.js"></script>
+    <script src="main.js"></script>
+</body>
+
+</html>

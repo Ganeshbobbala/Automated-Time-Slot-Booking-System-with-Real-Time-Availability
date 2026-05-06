@@ -1,0 +1,37 @@
+SRINU/ (Root Directory)
+├── Frontend/                      
+│   ├── css/
+│   │   └── style.css              
+│   ├── assets/
+│   │   └── demo-video.mp4         
+│   ├── index.html                 
+│   ├── customer-login.html        
+│   ├── dashboard.html             
+│   ├── booking.html               
+│   ├── rebook.html                
+│   ├── token-screen.html          
+│   ├── admin-login.html           
+│   ├── admin-signup.html          
+│   ├── admin.html                 
+│   ├── admin-stock.html           
+│   ├── gov-login.html          
+│   ├── gov-signup.html            
+│   ├── gov.html                   
+│   ├── main.js                    
+│   ├── charts.js                 
+│   ├── translations.js            
+│   ├── sw.js                      
+│   └── manifest.json              
+│
+├── Backend/                      
+│   ├── server.js                  
+│   ├── .env                       
+│   ├── package.json              
+│   └── server_log.txt             
+│
+├── AI-Machine-Learning/           
+│   ├── ml_api.py                  
+│   ├── ration_model.pkl           
+│   └── le_district/card.pkl       
+│
+└── package.json                   

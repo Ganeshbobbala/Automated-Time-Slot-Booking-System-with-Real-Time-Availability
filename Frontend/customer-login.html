@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Login - Digital Ration</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <header>
+    <div class="logo" data-i18n="appName">Digital Ration Distribution</div>
+    <div class="language-switcher">
+      <label for="language-select" data-i18n="languageLabel">Language</label>
+      <select id="language-select" onchange="setLanguage(this.value)">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+        <option value="te">తెలుగు</option>
+        <option value="kn">ಕನ್ನಡ</option>
+        <option value="ta">தமிழ்</option>
+        <option value="mr">मराठी</option>
+        <option value="ml">മലയാളം</option>
+      </select>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="card glass-card" style="max-width: 450px; margin: 4rem auto; padding: 3rem;">
+      <h2 style="margin-bottom: 2rem; text-align: center;" data-i18n="customerLoginTitle">Customer Login</h2>
+      <form id="customer-login-form">
+        <div class="form-group">
+          <label for="ration-card" data-i18n="rationCard">Ration Card Number</label>
+          <input type="text" id="ration-card" placeholder="Enter ration card number" required>
+        </div>
+        <button type="submit" id="login-btn" class="btn" data-i18n="login">Login</button>
+      </form>
+      <p style="margin-top: 15px; font-size: 0.9rem; text-align: center;">
+        <a href="index.html" style="color: #3498db;" data-i18n="backToHome">← Back to Home</a>
+      </p>
+    </div>
+  </div>
+
+  <div id="biometric-overlay" class="biometric-overlay">
+    <div class="biometric-scanner">
+      <video id="biometric-video" autoplay playsinline muted></video>
+      <div id="fingerprint-icon" class="fingerprint-icon" style="cursor: pointer;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 100%; height: 100%;">
+          <path d="M12 11c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4" />
+          <path d="M8 11v4c0 2.21 1.79 4 4 4s4-1.79 4-4v-4" />
+          <path d="M12 19h.01" />
+          <path d="M7 16a5 5 0 0 1 10 0" />
+          <path d="M5 13a7 7 0 0 1 14 0" />
+          <path d="M3 10a9 9 0 0 1 18 0" />
+        </svg>
+        <div id="finger-instruction" style="position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); width: 200px; text-align: center; font-size: 0.8rem; color: var(--accent); opacity: 0.8; font-weight: bold;">PRESS & HOLD TO SCAN</div>
+      </div>
+      <div id="face-indicator" style="position: absolute; top: 15px; left: 50%; transform: translateX(-50%); font-size: 0.7rem; display: none; z-index: 10; background: rgba(74, 222, 128, 0.2); padding: 4px 12px; border-radius: 20px; color: #4ade80; border: 1px solid #4ade80; font-weight: bold; letter-spacing: 1px; backdrop-filter: blur(5px);">👤 FACE DETECTED</div>
+      <div class="scan-line"></div>
+      <div class="scanning-grid"></div>
+    </div>
+    <div class="biometric-modes" style="margin-bottom: 2rem; display: flex; gap: 0.5rem; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 50px; width: 320px; border: 1px solid rgba(255,255,255,0.1); position: relative; z-index: 10;">
+        <button id="mode-face" onclick="setBiometricMode('face')" class="btn" style="flex:1; background:transparent; font-size: 0.75rem; border-radius: 40px; border:none; padding: 10px; color:rgba(255,255,255,0.6);">📷 Facial</button>
+        <button id="mode-finger" onclick="setBiometricMode('finger')" class="btn" style="flex:1; background:var(--accent); font-size: 0.75rem; border-radius: 40px; border:none; color:white; padding: 10px;">☝️ Biometric</button>
+    </div>
+    <div class="biometric-status">
+      <h2 id="biometric-title" class="shimmer" data-i18n="identityVerification">IDENTITY VERIFICATION</h2>
+      <p id="biometric-subtitle" data-i18n="alignFace">Align your face within the circle to continue</p>
+      
+      <div class="biometric-progress">
+        <div id="biometric-bar" class="biometric-progress-bar"></div>
+      </div>
+      
+      <div id="biometric-success" class="biometric-success">
+        <span data-i18n="identityVerified">✅ BIOMETRICS VERIFIED ✅</span>
+        <button id="biometric-continue-btn" class="btn" style="margin-top: 1.5rem; display: none; background: var(--success); width: 100%;" data-i18n="continueToDashboard">Continue to Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-cpu"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection"></script>
+  
+  <script src="translations.js"></script>
+  <script src="main.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- QR Scanner Library -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <!-- Export Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body>
+  <header>
+    <div class="logo" data-i18n="appName">Digital Ration Distribution</div>
+    <div class="header-nav">
+      <span id="user-name" style="margin-right: 15px; font-weight: 600; opacity: 0.9;"></span>
+      <button id="logout-btn" class="btn-logout" data-i18n="logout">Logout</button>
+    </div>
+  </header>
+
+  <!-- Notification Hub -->
+  <button class="notification-toggle-btn" onclick="toggleNotifications()">
+    🔔 <span class="notification-badge" id="notif-count">0</span>
+  </button>
+
+  <aside class="notification-hub" id="notification-hub">
+    <div class="notification-header">
+      <h2>Notifications</h2>
+      <button class="notification-close" onclick="toggleNotifications()">×</button>
+    </div>
+    <div class="notification-list" id="notification-list">
+      <div class="notification-item success">
+        <h4>System Online</h4>
+        <p>Digital Ration System is running at full capacity.</p>
+        <span class="time">Just now</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="container">
+    <!-- Stats Summary at the Top -->
+    <div class="stats-cards"
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+      <div class="card stat-card" style="border-left-color: #3b82f6; margin-bottom: 0;">
+        <h3 data-i18n="todaysTotal">Today's Total</h3>
+        <p id="today-total">0</p>
+      </div>
+      <div class="card stat-card" style="border-left-color: #818cf8; margin-bottom: 0;">
+        <h3 data-i18n="currentHour">Current Hour</h3>
+        <p id="current-hour-bookings">0</p>
+      </div>
+      <div class="card stat-card" style="border-left-color: #10b981; margin-bottom: 0;">
+        <h3 data-i18n="servedToday">Served Today</h3>
+        <p id="served-today">0</p>
+      </div>
+      <div class="card stat-card" style="border-left-color: #f59e0b; margin-bottom: 0;">
+        <h3 data-i18n="pending">Pending</h3>
+        <p id="pending-today">0</p>
+      </div>
+    </div>
+
+    <div class="admin-grid">
+      <!-- Main Dashboard Side (Left) -->
+      <div class="admin-main">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="font-weight: 800; color: #1e293b; font-size: 1.75rem;">📊 Distribution Analytics</h2>
+        </div>
+
+        <div class="stats-cards" style="grid-template-columns: 1fr 1fr; margin-bottom: 0;">
+          <div class="card" style="height: 350px; display: flex; flex-direction: column;">
+            <h3 data-i18n="stockTrends">📊 Stock Consumption Trends</h3>
+            <div style="flex: 1; position: relative;">
+              <canvas id="stock-chart"></canvas>
+            </div>
+          </div>
+          <div class="card" style="height: 350px; display: flex; flex-direction: column;">
+            <h3 data-i18n="peakHours">📍 Peak Distribution Hours</h3>
+            <div style="flex: 1; position: relative;">
+              <canvas id="hourly-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Demand Forecast Pie Chart -->
+        <div class="card" style="margin-top: 0; height: 400px; display: flex; flex-direction: column;">
+          <h3 style="margin-bottom: 1.5rem;" data-i18n="demandForecast">📅 Demand Forecast Distribution (Monthly)</h3>
+          <div style="flex: 1; position: relative; display: flex; justify-content: center; align-items: center;">
+            <canvas id="monthly-pie-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- AI Smart Order Predictor -->
+        <div class="card"
+          style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border: 1px solid #cbd5e0;">
+          <h3 style="color: #4f46e5; margin-bottom: 1rem;"><span data-i18n="inventoryForecast">🤖 AI Smart Order
+              Predictor</span> <span class="badge"
+              style="background: #e0e7ff; color: #4338ca; font-size: 0.6rem;">Experimental</span></h3>
+          <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1.5rem;">Based on previous consumption patterns
+            and crowd trends, we suggest ordering the following for <strong>NEXT MONTH</strong>:</p>
+
+          <div id="forecast-grid"
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px;">
+            <!-- Will be populated by JS -->
+          </div>
+
+          <div
+            style="margin-top: 1.5rem; padding: 12px; background: rgba(79, 70, 229, 0.05); border-radius: 8px; border-left: 4px solid var(--primary);">
+            <p style="font-size: 0.75rem; color: #4338ca; margin: 0;"><strong>💡 AI Insight:</strong> Distribution peaks
+              on weekends. Consider stocking up 20% extra Rice by the 25th of this month to avoid shortages.</p>
+          </div>
+        </div>
+
+        <!-- Tables (History) -->
+        <div class="card">
+          <h2 data-i18n="todayBookings" style="margin-bottom: 1rem;">Today's Bookings</h2>
+          <div style="overflow-x: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th data-i18n="name">Name</th>
+                  <th data-i18n="bookingId">Booking ID</th>
+                  <th data-i18n="date">Date</th>
+                  <th data-i18n="timeSlot">Time Slot</th>
+                  <th data-i18n="status">Status</th>
+                  <th data-i18n="itemsTaken">Items to Distribute</th>
+                  <th data-i18n="action">Action</th>
+                </tr>
+              </thead>
+              <tbody id="bookings-list"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 data-i18n="bookingHistory" style="margin-bottom: 1rem;">All Bookings (History & Future)</h2>
+          <div style="overflow-x: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th data-i18n="name">Name</th>
+                  <th data-i18n="bookingId">Booking ID</th>
+                  <th data-i18n="date">Date</th>
+                  <th data-i18n="timeSlot">Time Slot</th>
+                  <th data-i18n="status">Status</th>
+                  <th data-i18n="itemsTaken">Items to Distribute</th>
+                  <th data-i18n="action">Action</th>
+                </tr>
+              </thead>
+              <tbody id="future-list"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions Sidebar (Right) -->
+      <div class="admin-sidebar" style="top: 20px;">
+        <!-- Quick Actions -->
+        <div class="card actions-card" style="background: #1e293b; color: white; border: none;">
+          <h3
+            style="color: #818cf8; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+            ⚡ Quick Actions</h3>
+          <div class="actions-grid">
+            <button class="btn" style="background: var(--accent);" onclick="openSpotRegistrationModal()"
+              data-i18n="spotRegistration">📍 Spot Registration</button>
+            <button class="btn" style="background: var(--success);" onclick="adminScanQRCode()" data-i18n="scan">⚡ Scan
+              QR Code</button>
+            <button class="btn" style="background: #10b981;" onclick="adminExportExcel()" data-i18n="excelBtn">📊 Export
+              Excel</button>
+            <button class="btn" style="background: #f59e0b;" onclick="window.location.href='admin-stock.html'"
+              data-i18n="manageStock">📦 Stock Management</button>
+            <button id="pause-bookings-btn" class="btn btn-secondary" style="background: #475569;"
+              data-i18n="pauseBookings">⏸️ Pause Bookings</button>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Scanner Modal -->
+  <div id="qr-scanner-modal"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999999; justify-content: center; align-items: center; flex-direction: column;">
+    <div
+      style="background: white; padding: 2rem; border-radius: 12px; width: 90%; max-width: 500px; text-align: center;">
+      <h2 style="margin-bottom: 1rem; color: #1e293b;">Scan Customer QR Code</h2>
+      <div id="qr-reader" style="width: 100%; margin-bottom: 1rem;"></div>
+
+      <div style="margin: 1rem 0; font-weight: bold; color: #64748b;">OR</div>
+
+      <input type="text" id="manual-booking-id" placeholder="Enter Booking ID manually"
+        style="width: 100%; padding: 12px; margin-bottom: 1rem; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; text-align: center; font-size: 1rem;">
+      <button class="btn" onclick="submitManualBookingId()"
+        style="width: 100%; background: #10b981; margin-bottom: 15px; border: none; font-size: 1rem;">Submit ID</button>
+
+      <button class="btn btn-secondary" onclick="closeAdminScanner()"
+        style="width: 100%; background: #94a3b8; border: none; font-weight: bold; color: white; padding: 12px; font-size: 1rem;">🔙
+        Go Back</button>
+    </div>
+  </div>
+
+  <!-- Spot Registration Modal (For Elderly) -->
+  <div id="spot-registration-modal"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000000; justify-content: center; align-items: center;">
+    <div class="card glass-card"
+      style="max-width: 500px; width: 90%; padding: 2rem; position: relative; max-height: 90vh; overflow-y: auto;">
+      <h2 style="text-align: center; margin-bottom: 2rem; color: var(--accent);">👴 Spot Registration (Elderly)</h2>
+
+      <div id="spot-step-1">
+        <div class="form-group">
+          <label>Enter Ration Card Number</label>
+          <input type="text" id="spot-ration-card" placeholder="12-digit ration card number"
+            style="width: 100%; padding: 12px; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; border-radius: 8px;">
+        </div>
+
+        <div class="form-group">
+          <label style="display: block; margin-bottom: 0.5rem; color: var(--accent);">🛒 Select Items to
+            Distribute</label>
+          <div
+            style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" name="spot-items" value="rice" checked> 🍚 Rice
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" name="spot-items" value="wheat" checked> 🌾 Wheat
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" name="spot-items" value="sugar" checked> 🍬 Sugar
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" name="spot-items" value="oil" checked> 🧴 Oil
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" name="spot-items" value="dal" checked> 🥣 Dal
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" name="spot-items" value="salt" checked> 🧂 Salt
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" name="spot-items" value="soap" checked> 🧼 Soap
+            </label>
+          </div>
+        </div>
+        <button class="btn" onclick="verifySpotRation()" style="width: 100%; background: var(--primary);">Next:
+          Biometric Identity →</button>
+      </div>
+
+      <div id="spot-step-2" style="display: none;">
+        <div class="biometric-scanner"
+          style="margin: 0 auto 2rem; width: 200px; height: 200px; border-radius: 50%; border: 2px solid var(--accent); position: relative; overflow: hidden; background: #000;">
+          <video id="spot-video" autoplay playsinline muted
+            style="width: 100%; height: 100%; object-fit: cover;"></video>
+          <div id="spot-fingerprint-icon"
+            style="display: none; width: 100%; height: 100%; padding: 40px; box-sizing: border-box; color: var(--accent);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M12 11c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4" />
+              <path d="M8 11v4c0 2.21 1.79 4 4 4s4-1.79 4-4v-4" />
+              <path d="M12 19h.01" />
+              <path d="M7 16a5 5 0 0 1 10 0" />
+              <path d="M5 13a7 7 0 0 1 14 0" />
+              <path d="M3 10a9 9 0 0 1 18 0" />
+            </svg>
+          </div>
+          <div class="scan-line"></div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 1.5rem;">
+          <button id="spot-mode-face" onclick="setSpotBiometricMode('face')" class="btn"
+            style="flex:1; background: var(--primary); font-size: 0.8rem;">📷 Face</button>
+          <button id="spot-mode-finger" onclick="setSpotBiometricMode('finger')" class="btn"
+            style="flex:1; background: transparent; border: 1px solid rgba(255,255,255,0.2); font-size: 0.8rem;">☝️
+            Biometric</button>
+        </div>
+
+        <div class="biometric-progress"
+          style="height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-bottom: 1rem; overflow: hidden;">
+          <div id="spot-biometric-bar"
+            style="width: 0%; height: 100%; background: var(--accent); transition: width 0.3s;"></div>
+        </div>
+        <p id="spot-biometric-status"
+          style="text-align: center; font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">Align face to verify...
+        </p>
+
+        <div id="spot-success-actions" style="display: none;">
+          <button class="btn" onclick="submitSpotRegistration()" style="width: 100%; background: var(--success);">✅
+            Confirm & Book Slot</button>
+        </div>
+      </div>
+
+      <button onclick="closeSpotRegistrationModal()"
+        style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">&times;</button>
+    </div>
+  </div>
+
+  <script src="translations.js"></script>
+  <script src="charts.js"></script>
+  <script src="main.js"></script>
+</body>
+
+</html>
