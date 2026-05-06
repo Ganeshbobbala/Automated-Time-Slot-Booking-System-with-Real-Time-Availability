@@ -1172,3 +1172,43 @@ tr:hover td {
   50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
   100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
 }
+
+/* Incoming Shipments Styles */
+.shipment-row {
+  transition: all 0.3s ease;
+}
+
+.shipment-row:hover {
+  background: #f1f5f9;
+  transform: scale(1.005);
+}
+
+.accept-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 0.5rem;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.accept-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+.accept-btn:active {
+  transform: scale(0.95);
+}
+
+.accept-btn::before {
+  content: '🚚';
+  font-size: 0.9rem;
+}

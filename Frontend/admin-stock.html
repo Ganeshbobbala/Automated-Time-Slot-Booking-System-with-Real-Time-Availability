@@ -19,7 +19,7 @@
   </header>
 
   <div class="container">
-    <div class="card glass-card" style="max-width: 600px; margin: 0 auto;">
+    <div class="card glass-card" style="max-width: 600px; margin: 0 auto; margin-bottom: 2rem;">
       <h2 style="margin-bottom: 2rem;">Stock Management</h2>
       <table id="stock-table">
         <thead>
@@ -33,10 +33,58 @@
       <div id="low-stock-alert" style="color:var(--danger); margin-top:1.5rem; font-weight:700; text-align:center;">
       </div>
     </div>
+    
+    <div class="card glass-card" style="max-width: 800px; margin: 0 auto; margin-bottom: 2rem;">
+      <h2 style="margin-bottom: 1.5rem; color: #3b82f6;">➕ Manual Stock Adjustment</h2>
+      <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">Use this section to manually add or correct stock levels if needed.</p>
+      <div class="grid-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-bottom: 1.5rem;">
+        <div class="form-group"><label style="font-size: 0.8rem;">Rice (kg)</label><input type="number" id="manual-rice" value="0"></div>
+        <div class="form-group"><label style="font-size: 0.8rem;">Wheat (kg)</label><input type="number" id="manual-wheat" value="0"></div>
+        <div class="form-group"><label style="font-size: 0.8rem;">Sugar (kg)</label><input type="number" id="manual-sugar" value="0"></div>
+        <div class="form-group"><label style="font-size: 0.8rem;">Oil (L)</label><input type="number" id="manual-oil" value="0"></div>
+        <div class="form-group"><label style="font-size: 0.8rem;">Dal (kg)</label><input type="number" id="manual-dal" value="0"></div>
+        <div class="form-group"><label style="font-size: 0.8rem;">Salt (kg)</label><input type="number" id="manual-salt" value="0"></div>
+        <div class="form-group"><label style="font-size: 0.8rem;">Soap (pcs)</label><input type="number" id="manual-soap" value="0"></div>
+      </div>
+      <button class="btn" style="width: 100%; height: 3rem; background: #3b82f6;" onclick="window.applyManualStock()">💾 Update Current Inventory</button>
+    </div>
+      <h2 style="margin-bottom: 1.5rem; color: #f59e0b;">🚚 Incoming Stock Shipments</h2>
+      <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">Accept these shipments from the Government to update your inventory.</p>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Origin</th>
+              <th>Rice</th>
+              <th>Wheat</th>
+              <th>Sugar</th>
+              <th>Oil</th>
+              <th>Dal</th>
+              <th>Salt</th>
+              <th>Soap</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="pending-shipments-body">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <script src="translations.js"></script>
   <script src="main.js"></script>
+  <script>
+    // Real-time listener for incoming shipments
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'pendingShipments') {
+        if (typeof renderPendingShipments === 'function') {
+          renderPendingShipments();
+        }
+      }
+    });
+  </script>
 </body>
 
 </html>

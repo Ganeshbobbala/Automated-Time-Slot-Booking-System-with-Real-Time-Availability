@@ -118,6 +118,35 @@
           </div>
         </div>
 
+        <!-- Incoming Stock Shipments -->
+        <div class="card" style="border-top: 4px solid #f59e0b;">
+          <h2 style="margin-bottom: 1rem; color: #f59e0b; display: flex; align-items: center; gap: 10px;">
+            <span>🚚 Incoming Stock Shipments</span>
+            <span class="badge" style="background: #fef3c7; color: #92400e; font-size: 0.7rem;">New Dispatches</span>
+          </h2>
+          <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1.5rem;">Accept these shipments from the Government to update your inventory in real-time.</p>
+          <div style="overflow-x: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Origin</th>
+                  <th>Rice</th>
+                  <th>Wheat</th>
+                  <th>Sugar</th>
+                  <th>Oil</th>
+                  <th>Dal</th>
+                  <th>Salt</th>
+                  <th>Soap</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="pending-shipments-body">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- Tables (History) -->
         <div class="card">
           <h2 data-i18n="todayBookings" style="margin-bottom: 1rem;">Today's Bookings</h2>

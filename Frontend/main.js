@@ -1663,7 +1663,12 @@ document.addEventListener('DOMContentLoaded', () => {
               <button class="btn btn-secondary" onclick="verifyDetails(${b.id})" style="margin-left:5px; background-color:#3498db; border:none;">${translations[lang].verifyDetails}</button>
               <button class="btn btn-secondary" onclick="adminReschedule(${b.id})" style="margin-left:5px; background-color:#f39c12; border:none;">${translations[lang].reschedule}</button>
             ` : ''}
-            ${currentStatus === 'collected' ? `<span style="color:var(--success); font-weight:600;">\u2705 Received</span>` : ''}
+            ${currentStatus === 'collected' ? `
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="color:var(--success); font-weight:600;">\u2705 Received</span>
+                <button class="btn btn-sm" onclick="showVerificationPanel(${b.id})" style="background:#64748b; padding:2px 8px; font-size:0.7rem;">Details</button>
+              </div>
+            ` : ''}
           </td>
         `;
       container.appendChild(row);
@@ -1788,9 +1793,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const uData = JSON.parse(localStorage.getItem('userData_' + (booking.rationCard || '1234567890'))) || {};
     let familyOptions = '';
     if (uData && uData.family && Array.isArray(uData.family)) {
-      familyOptions = uData.family.map(m => `<option value="\${m.name}">\${m.name} (\${m.relation})</option>`).join('');
+      familyOptions = uData.family.map(m => `<option value="${m.name}">${m.name} (${m.relation})</option>`).join('');
     } else {
-      familyOptions = `<option value="\${booking.customerName}">\${booking.customerName}</option>`;
+      familyOptions = `<option value="${booking.customerName}">${booking.customerName}</option>`;
     }
 
     const html = `
@@ -1799,7 +1804,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="form-group" style="margin-bottom: 20px; text-align: left;">
         <label for="admin-collector-name" style="font-weight: 600; font-size: 0.95rem; color: #1e293b; display: block; margin-bottom: 8px;">Who came to collect the ration?</label>
         <select id="admin-collector-name" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; background: white; font-size: 1rem;">
-          \${familyOptions}
+          ${familyOptions}
         </select>
       </div>
       
@@ -1821,7 +1826,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('scanner-text').style.color = '#2ecc71';
             
             let currentBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-            const bIndex = currentBookings.findIndex(b => b.id === \${id});
+            const bIndex = currentBookings.findIndex(b => b.id === ${id});
             if (bIndex !== -1) {
                 currentBookings[bIndex].collectorName = collectorName;
                 localStorage.setItem('bookings', JSON.stringify(currentBookings));
@@ -1882,84 +1887,58 @@ document.addEventListener('DOMContentLoaded', () => {
     alert(`Booking rescheduled successfully to ${newDate} ${newTime}.`);
   };
 
-  window.verifyDetails = function (id) {
+  window.showVerificationPanel = function (id) {
     const lang = localStorage.getItem('language') || 'en';
     const t = translations[lang];
     const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
     const booking = bookings.find(b => b.id === id);
     if (!booking) return;
 
-    const userData = JSON.parse(localStorage.getItem('userData_' + (booking.rationCard || '1234567890')));
+    const userData = JSON.parse(localStorage.getItem('userData_' + (booking.rationCard || '1234567890'))) || {};
+    const members = userData.family_members || (userData.family ? userData.family.length : 4);
 
-    let familyHtml = '<ul style="list-style:none; padding:0; text-align:left; margin:20px 0;">';
-    if (userData && userData.family) {
+    let familyHtml = '<ul style="list-style:none; padding:0; text-align:left; margin:15px 0;">';
+    if (userData.family) {
       userData.family.forEach(m => {
-        familyHtml += `<li style="padding:8px 0; border-bottom:1px solid #eee;"><strong>${m.name}</strong></li>`;
+        familyHtml += `<li style="padding:10px 0; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between;">
+          <span style="font-weight:600; color:#1e293b;">${m.name}</span>
+          <span style="color:#64748b; font-size:0.8rem;">${m.relation}</span>
+        </li>`;
       });
     } else {
-      familyHtml += `<li style="padding:8px 0; border-bottom:1px solid #eee;"><strong>John Doe</strong></li>
-                     <li style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Jane Doe</strong></li>
-                     <li style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Little Doe</strong></li>`;
+      familyHtml += '<li style="padding:10px 0; color:#64748b;">No family data available.</li>';
     }
     familyHtml += '</ul>';
 
-    const rationCard = booking.rationCard || '1234567890';
-    const currentMonthPrefix = new Date().toISOString().slice(0, 7);
-    const userBookings = bookings.filter(b =>
-      b.rationCard === rationCard &&
-      b.status === 'collected' &&
-      b.date.startsWith(currentMonthPrefix)
-    );
-
-    // Show items for THIS booking
-    let itemsHtml = '';
-    const members = (userData && userData.family_members) ? userData.family_members : (userData && userData.family ? userData.family.length : 4);
-
-    let totalItems = {
-      rice: members * 5,
-      wheat: members * 1,
-      sugar: members * 0.5,
-      oil: 1,
-      dal: 1,
-      salt: 1,
-      soap: 2
-    };
-
-    let selectedItems = booking.selectedItems;
-    if (!selectedItems && booking.items_taken && booking.items_taken !== 'none') {
-      selectedItems = booking.items_taken.split(',').map(s => s.trim());
-    } else if (!selectedItems) {
-      selectedItems = ['rice', 'wheat', 'sugar', 'oil', 'dal', 'salt', 'soap'];
-    }
-
-    itemsHtml = `
+    const items = booking.selectedItems || ['rice', 'wheat', 'sugar', 'oil', 'dal', 'salt', 'soap'];
+    let itemsHtml = `
       <div style="background:#f8fafc; border-left:4px solid #3b82f6; padding:15px; border-radius:12px; margin-top:15px;">
-        <h3 style="font-size:1rem; color:#1e293b; margin-bottom:10px;">Items to Distribute</h3>
+        <h3 style="font-size:1rem; color:#1e293b; margin-bottom:10px;">Items Distributed</h3>
         <ul style="list-style:none; padding:0; text-align:left;">
-          ${selectedItems.includes('rice') ? `<li style="padding:4px 0; border-bottom:1px solid #eee;"><strong>🍚 Rice:</strong> ${totalItems.rice} kg</li>` : ''}
-          ${selectedItems.includes('wheat') ? `<li style="padding:4px 0; border-bottom:1px solid #eee;"><strong>🌾 Wheat:</strong> ${totalItems.wheat} kg</li>` : ''}
-          ${selectedItems.includes('sugar') ? `<li style="padding:4px 0; border-bottom:1px solid #eee;"><strong>🍬 Sugar:</strong> ${totalItems.sugar} kg</li>` : ''}
-          ${selectedItems.includes('oil') ? `<li style="padding:4px 0; border-bottom:1px solid #eee;"><strong>🧴 Oil:</strong> ${totalItems.oil} L</li>` : ''}
-          ${selectedItems.includes('dal') ? `<li style="padding:4px 0; border-bottom:1px solid #eee;"><strong>🥣 Dal:</strong> ${totalItems.dal} kg</li>` : ''}
-          ${selectedItems.includes('salt') ? `<li style="padding:4px 0; border-bottom:1px solid #eee;"><strong>🧂 Salt:</strong> ${totalItems.salt} kg</li>` : ''}
-          ${selectedItems.includes('soap') ? `<li style="padding:4px 0;"><strong>🧼 Soap:</strong> ${totalItems.soap} pcs</li>` : ''}
+          ${items.includes('rice') ? `<li>🍚 Rice: ${members * 5}kg</li>` : ''}
+          ${items.includes('wheat') ? `<li>🌾 Wheat: ${members * 1}kg</li>` : ''}
+          ${items.includes('sugar') ? `<li>🍬 Sugar: ${members * 0.5}kg</li>` : ''}
+          ${items.includes('oil') ? `<li>🧴 Oil: 1L</li>` : ''}
+          ${items.includes('dal') ? `<li>🥣 Dal: ${members * 1}kg</li>` : ''}
+          ${items.includes('salt') ? `<li>🧂 Salt: ${members * 1}kg</li>` : ''}
+          ${items.includes('soap') ? `<li>🧼 Soap: 2pcs</li>` : ''}
         </ul>
       </div>
     `;
 
     const content = `
-      <h2 style="margin-bottom:10px;">${t.verificationPanel}</h2>
+      <h2 style="margin-bottom:10px; color:var(--primary);">🛡️ ${t.verificationPanel || 'Verification Panel'}</h2>
       <p><strong>${t.customerLabel}:</strong> ${booking.customerName}</p>
-      <p><strong>${t.status}:</strong> ${t[booking.status] || booking.status}</p>
+      <p><strong>${t.status}:</strong> <span class="badge badge-collected">COLLECTED</span></p>
       <div style="background:#f8fafc; padding:15px; border-radius:12px; margin-top:15px;">
         <h3 style="font-size:1rem;">${t.familyDetails}</h3>
         ${familyHtml}
       </div>
       ${itemsHtml}
-      <div style="margin-top:20px; color:#10b981; font-weight:700; font-size:1.1rem;">
-        ${t.biometricStatus}: ${t.biometricVerified} <span style="font-size:1.5rem;">\u2705</span>
+      <div style="margin-top:20px; color:#10b981; font-weight:700; font-size:1.1rem; text-align:center;">
+        ✅ Identity Verified Successfully
       </div>
-      <button class="btn" style="margin-top:20px; width:100%; background-color:#5a67d8;" onclick="closeModal()">${t.closePanel}</button>
+      <button class="btn" style="margin-top:20px; width:100%; background:var(--secondary);" onclick="closeModal()">${t.closePanel}</button>
     `;
     showModal(content);
   };
@@ -2101,7 +2080,155 @@ document.addEventListener('DOMContentLoaded', () => {
     window.renderGovBookings(filtered);
   }
 
-  // ---------- ADMIN STOCK PAGE ----------
+  // ---------- ADMIN STOCK & DASHBOARD SHARED LOGIC ----------
+  window.renderPendingShipments = function() {
+    const pendingTbody = document.getElementById('pending-shipments-body');
+    if (!pendingTbody) return;
+    
+    let shipments = JSON.parse(localStorage.getItem('pendingShipments') || '[]');
+    
+    if (shipments.length === 0) {
+      pendingTbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #94a3b8; padding: 2rem;">No incoming shipments at this time.</td></tr>';
+      return;
+    }
+    
+    pendingTbody.innerHTML = shipments.map(s => `
+      <tr class="shipment-row">
+        <td>
+          <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 4px;">${s.date}</div>
+          <div style="font-weight: bold; color: #1e293b;">Gov Distribution</div>
+        </td>
+        <td style="font-weight: 600;">${s.rice} kg</td>
+        <td style="font-weight: 600;">${s.wheat} kg</td>
+        <td style="font-weight: 600;">${s.sugar} kg</td>
+        <td style="font-weight: 600;">${s.oil} L</td>
+        <td style="font-weight: 600;">${s.dal} kg</td>
+        <td style="font-weight: 600;">${s.salt || 0} kg</td>
+        <td style="font-weight: 600;">${s.soap || 0} pcs</td>
+        <td>
+          <button class="btn accept-btn" onclick="window.acceptShipment(${s.id})">
+             <span>🚚 Accept</span>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  };
+
+  window.applyManualStock = async function() {
+    const items = ['rice', 'wheat', 'sugar', 'oil', 'dal', 'salt', 'soap'];
+    let adminStock = JSON.parse(localStorage.getItem('stock')) || { rice: 0, wheat: 0, sugar: 0, oil: 0, dal: 0, salt: 0, soap: 0 };
+    let updates = [];
+
+    items.forEach(item => {
+      const input = document.getElementById(`manual-${item}`);
+      if (input) {
+        const delta = parseFloat(input.value) || 0;
+        if (delta !== 0) {
+          adminStock[item] = (adminStock[item] || 0) + delta;
+          updates.push({ item, delta });
+          input.value = 0; // Reset input
+        }
+      }
+    });
+
+    if (updates.length === 0) {
+      alert("Please enter at least one value to update.");
+      return;
+    }
+
+    // Update Local
+    localStorage.setItem('stock', JSON.stringify(adminStock));
+    if (typeof renderStock === 'function') renderStock();
+
+    // Cloud Sync (non-blocking)
+    updates.forEach(upd => {
+      fetch(`${BACKEND_URL}/api/admin/stock`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item: upd.item, delta: upd.delta })
+      }).catch(err => console.error(`Manual Cloud Sync Failed for ${upd.item}:`, err));
+    });
+
+    // Show toast
+    const toast = document.createElement('div');
+    toast.style = "position:fixed; bottom:20px; right:20px; background:#3b82f6; color:white; padding:15px 25px; border-radius:10px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); z-index:9999; animation: slideIn 0.3s ease-out;";
+    toast.innerHTML = `<div style="display:flex; align-items:center; gap:10px;">
+      <span style="font-size:1.2rem;">💾</span>
+      <div>
+        <div style="font-weight:bold;">Inventory Updated</div>
+        <div style="font-size:0.8rem; opacity:0.9;">Manual adjustments applied successfully.</div>
+      </div>
+    </div>`;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.animation = "slideOut 0.3s ease-in forwards";
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  };
+
+  window.acceptShipment = async function(id) {
+    let shipments = JSON.parse(localStorage.getItem('pendingShipments') || '[]');
+    const idx = shipments.findIndex(s => s.id == id);
+    if (idx === -1) return;
+    
+    const shipment = shipments[idx];
+    
+    // 1. Update local stock IMMEDIATELY
+    let adminStock = JSON.parse(localStorage.getItem('stock')) || { rice: 0, wheat: 0, sugar: 0, oil: 0, dal: 0, salt: 0, soap: 0 };
+    adminStock.rice += shipment.rice || 0;
+    adminStock.wheat += shipment.wheat || 0;
+    adminStock.sugar += shipment.sugar || 0;
+    adminStock.oil += shipment.oil || 0;
+    adminStock.dal += shipment.dal || 0;
+    adminStock.salt += shipment.salt || 0;
+    adminStock.soap += shipment.soap || 0;
+    localStorage.setItem('stock', JSON.stringify(adminStock));
+    
+    // 2. Update Gov History Status
+    let govHistory = JSON.parse(localStorage.getItem('govSupplyHistory') || '[]');
+    const histIdx = govHistory.findIndex(h => h.id == id);
+    if (histIdx !== -1) {
+      govHistory[histIdx].status = 'Delivered';
+      localStorage.setItem('govSupplyHistory', JSON.stringify(govHistory));
+    }
+
+    // 3. Remove from pending and Update UI IMMEDIATELY
+    shipments.splice(idx, 1);
+    localStorage.setItem('pendingShipments', JSON.stringify(shipments));
+    
+    if (typeof renderStock === 'function') renderStock();
+    window.renderPendingShipments();
+    
+    // 4. Show confirmation Toast
+    const toast = document.createElement('div');
+    toast.style = "position:fixed; bottom:20px; right:20px; background:#10b981; color:white; padding:15px 25px; border-radius:10px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); z-index:9999; animation: slideIn 0.3s ease-out;";
+    toast.innerHTML = `<div style="display:flex; align-items:center; gap:10px;">
+      <span style="font-size:1.2rem;">✅</span>
+      <div>
+        <div style="font-weight:bold;">Shipment Accepted</div>
+        <div style="font-size:0.8rem; opacity:0.9;">Inventory updated in real-time.</div>
+      </div>
+    </div>`;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.animation = "slideOut 0.3s ease-in forwards";
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+
+    // 5. Cloud Sync in background
+    const itemsToSync = ['rice', 'wheat', 'sugar', 'oil', 'dal', 'salt', 'soap'];
+    for (const item of itemsToSync) {
+      if (shipment[item] > 0) {
+        fetch(`${BACKEND_URL}/api/admin/stock`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ item, delta: shipment[item] })
+        }).catch(err => console.error(`Cloud Sync Failed for ${item}:`, err));
+      }
+    }
+  };
+
+  // ---------- ADMIN STOCK PAGE SPECIFIC ----------
   if (window.location.pathname.includes('admin-stock.html')) {
     const tbody = document.querySelector('#stock-table tbody');
     const alertDiv = document.getElementById('low-stock-alert');
@@ -2109,6 +2236,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderStock() {
       const stock = JSON.parse(localStorage.getItem('stock'));
       const lang = localStorage.getItem('language') || 'en';
+      if(!tbody) return;
       tbody.innerHTML = '';
       let lowStockItems = [];
       for (let [item, qty] of Object.entries(stock)) {
@@ -2123,10 +2251,8 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.appendChild(row);
         if (qty < 50) lowStockItems.push(displayName);
       }
-      if (lowStockItems.length > 0) {
-        alertDiv.textContent = `Low stock alert: ${lowStockItems.join(', ')}`;
-      } else {
-        alertDiv.textContent = '';
+      if (alertDiv) {
+        alertDiv.textContent = lowStockItems.length > 0 ? `Low stock alert: ${lowStockItems.join(', ')}` : '';
       }
     }
 
@@ -2134,22 +2260,23 @@ document.addEventListener('DOMContentLoaded', () => {
       const stock = JSON.parse(localStorage.getItem('stock'));
       stock[item] += delta;
       localStorage.setItem('stock', JSON.stringify(stock));
-
-      // Sync with Cloud
       try {
         await fetch(`${BACKEND_URL}/api/admin/stock`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ item, delta })
         });
-      } catch (err) {
-        console.error('Stock Sync Failed:', err);
-      }
-
+      } catch (err) { console.error('Stock Sync Failed:', err); }
       renderStock();
     };
 
     renderStock();
+    window.renderPendingShipments();
+  }
+
+  // Initial call for main dashboard if table exists
+  if (window.location.pathname.includes('admin.html')) {
+    window.renderPendingShipments();
   }
 
   // ---------- ADMIN SIGNUP ----------

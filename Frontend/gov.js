@@ -138,31 +138,42 @@ window.sendStockToDealer = function() {
     return;
   }
 
-  // 1. Update Global Admin Stock (Simulating sending to the local admin/dealer)
-  let adminStock = JSON.parse(localStorage.getItem('stock')) || { rice: 0, wheat: 0, sugar: 0, oil: 0, dal: 0, salt: 0, soap: 0 };
-  adminStock.rice += rice;
-  adminStock.wheat += wheat;
-  adminStock.sugar += sugar;
-  adminStock.oil += oil;
-  adminStock.dal += dal;
-  adminStock.salt += salt;
-  adminStock.soap += soap;
-  localStorage.setItem('stock', JSON.stringify(adminStock));
-  
-  // 2. Log History
-  let history = JSON.parse(localStorage.getItem('govSupplyHistory') || '[]');
-  history.push({
-    id: Date.now(),
+  const shipmentId = Date.now();
+
+  // 1. Add to Pending Shipments for the Dealer to accept
+  let pendingShipments = JSON.parse(localStorage.getItem('pendingShipments') || '[]');
+  pendingShipments.push({
+    id: shipmentId,
     date: new Date().toLocaleString(),
     shop: shop,
     rice: rice,
     wheat: wheat,
     sugar: sugar,
-    oil: oil
+    oil: oil,
+    dal: dal,
+    salt: salt,
+    soap: soap
+  });
+  localStorage.setItem('pendingShipments', JSON.stringify(pendingShipments));
+  
+  // 2. Log History
+  let history = JSON.parse(localStorage.getItem('govSupplyHistory') || '[]');
+  history.push({
+    id: shipmentId,
+    date: new Date().toLocaleString(),
+    shop: shop,
+    rice: rice,
+    wheat: wheat,
+    sugar: sugar,
+    oil: oil,
+    dal: dal,
+    salt: salt,
+    soap: soap,
+    status: 'Processing'
   });
   localStorage.setItem('govSupplyHistory', JSON.stringify(history));
   
-  alert(`Stock successfully dispatched to ${shop}! Dealer inventory updated.`);
+  alert(`Stock successfully dispatched to ${shop}! Waiting for Dealer to accept.`);
   
   // Reset Form
   document.querySelectorAll('.grid-form input[type="number"]').forEach(input => input.value = 0);
@@ -181,19 +192,36 @@ function renderSupplyHistory() {
   history.sort((a, b) => b.id - a.id);
   
   if (history.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94a3b8;">No supply history available.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #94a3b8; padding: 2rem;">No supply history available.</td></tr>';
     return;
   }
   
-  tbody.innerHTML = history.map(h => `
-    <tr>
-      <td style="font-size: 0.9rem; color: #475569;">${h.date}</td>
-      <td style="font-weight: 600; color: #1e293b;">${h.shop}</td>
-      <td>${h.rice}</td>
-      <td>${h.wheat}</td>
-      <td>${h.sugar}</td>
-      <td>${h.oil}</td>
-      <td><span class="badge">Delivered</span></td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = history.map(h => {
+    const status = h.status || 'Processing';
+    let badgeClass = 'badge-warning';
+    let displayStatus = status;
+
+    if (status === 'Delivered' || status === 'Accepted') {
+      badgeClass = 'badge-success';
+      displayStatus = 'Delivered';
+    } else if (status === 'Processing') {
+      badgeClass = 'badge-warning';
+      displayStatus = 'Processing';
+    }
+    
+    return `
+      <tr>
+        <td style="font-size: 0.85rem; color: #475569; white-space: nowrap;">${h.date}</td>
+        <td style="font-weight: 600; color: #1e293b;">${h.shop}</td>
+        <td style="font-weight: 500;">${h.rice}</td>
+        <td style="font-weight: 500;">${h.wheat}</td>
+        <td style="font-weight: 500;">${h.sugar}</td>
+        <td style="font-weight: 500;">${h.oil}</td>
+        <td style="font-weight: 500;">${h.dal}</td>
+        <td style="font-weight: 500;">${h.salt || 0}</td>
+        <td style="font-weight: 500;">${h.soap || 0}</td>
+        <td><span class="badge ${badgeClass}" style="padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">${displayStatus}</span></td>
+      </tr>
+    `;
+  }).join('');
 }

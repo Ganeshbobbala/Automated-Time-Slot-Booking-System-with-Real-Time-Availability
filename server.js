@@ -6,7 +6,7 @@ app.use(express.json());
 
 app.post("/predict-card", async (req, res) => {
   try {
-    const response = await axios.post("http://127.0.0.1:5000/predict", {
+    const response = await axios.post("http://127.0.0.1:5001/predict", {
       district: req.body.district,
       family_members: req.body.family_members,
       monthly_income: req.body.monthly_income,
